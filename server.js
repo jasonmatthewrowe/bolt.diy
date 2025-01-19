@@ -1,4 +1,5 @@
 const express = require('express');
+const { createRequestHandler } = require('@remix-run/express');
 const path = require('path');
 const sqlite3 = require('sqlite3').verbose();
 const { open } = require('sqlite');
@@ -52,9 +53,9 @@ async function initializeDatabase(db) {
   `);
 }
 
-// Serve static files from the built React app
-app.use(express.static(path.join(__dirname, 'dist')));
-app.use(express.json());
+// Serve public files
+app.use(express.static('public'));
+app.use(express.static('dist/client'));
 
 // API Routes
 app.post('/api/*', async (req, res) => {
@@ -71,10 +72,14 @@ app.get('/health', (req, res) => {
   res.json({ status: 'healthy' });
 });
 
-// Catch all routes and serve the React app
-app.get('*', function(req, res) {
-  res.sendFile(path.join(__dirname, 'dist', 'index.html'));
-});
+// All other routes go to Remix
+app.all(
+  '*',
+  createRequestHandler({
+    build: require('./dist/server/index.js'),
+    mode: process.env.NODE_ENV,
+  })
+);
 
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);
