@@ -122,7 +122,6 @@
     "@types/sqlite3": "^3.1.8",
     "@types/highlight.js": "^10.1.0",
     "@types/react-toastify": "^9.1.1",
-    "@types/html-to-image": "^1.11.11",
     "@types/react-markdown": "^8.0.5",
     "@types/remark-gfm": "^3.0.1",
     "@types/rehype-raw": "^6.1.2",
