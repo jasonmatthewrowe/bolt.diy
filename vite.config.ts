@@ -63,10 +63,10 @@ export default defineConfig(({ command, mode }) => {
     },
     ssr: {
       target: 'node',
-      noExternal: ['@remix-run/*', 'react-toastify']
+      noExternal: ['@remix-run/*', 'react-toastify', 'remix-utils']
     },
     optimizeDeps: {
-      include: ['react-toastify']
+      include: ['react-toastify', 'remix-utils']
     }
   };
 });
