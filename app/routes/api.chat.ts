@@ -1,4 +1,4 @@
-import { type ActionFunctionArgs } from '@remix-run/cloudflare';
+import { type ActionFunctionArgs } from '@remix-run/node';
 import { createDataStream } from 'ai';
 import { MAX_RESPONSE_SEGMENTS, MAX_TOKENS } from '~/lib/.server/llm/constants';
 import { CONTINUE_PROMPT } from '~/lib/common/prompts/prompts';
@@ -31,7 +31,7 @@ function parseCookies(cookieHeader: string): Record<string, string> {
   return cookies;
 }
 
-async function chatAction({ context, request }: ActionFunctionArgs) {
+async function chatAction({ request }: ActionFunctionArgs) {
   const { messages, files, promptId, contextOptimization } = await request.json<{
     messages: Messages;
     files: any;
@@ -82,7 +82,6 @@ async function chatAction({ context, request }: ActionFunctionArgs) {
           }).pipeThrough(
             new TransformStream({
               transform: (chunk, controller) => {
-                // Convert the string stream to a byte stream
                 const str = typeof chunk === 'string' ? chunk : JSON.stringify(chunk);
                 controller.enqueue(encoder.encode(str));
               },
@@ -108,7 +107,7 @@ async function chatAction({ context, request }: ActionFunctionArgs) {
 
         const result = await streamText({
           messages,
-          env: context.cloudflare.env,
+          env: process.env,
           options,
           apiKeys,
           files,
@@ -127,7 +126,7 @@ async function chatAction({ context, request }: ActionFunctionArgs) {
 
     const result = await streamText({
       messages,
-      env: context.cloudflare.env,
+      env: process.env,
       options,
       apiKeys,
       files,
@@ -141,7 +140,6 @@ async function chatAction({ context, request }: ActionFunctionArgs) {
         if (part.type === 'error') {
           const error: any = part.error;
           logger.error(`${error}`);
-
           return;
         }
       }
@@ -149,12 +147,11 @@ async function chatAction({ context, request }: ActionFunctionArgs) {
 
     stream.switchSource(result.toDataStream());
 
-    // return createrespo
     return new Response(stream.readable, {
       status: 200,
       headers: {
         'Content-Type': 'text/event-stream; charset=utf-8',
-        Connection: 'keep-alive',
+        'Connection': 'keep-alive',
         'Cache-Control': 'no-cache',
         'Text-Encoding': 'chunked',
       },
