@@ -22,6 +22,7 @@
     "@codemirror/lang-markdown": "^6.0.1", 
     "@codemirror/lang-json": "^6.0.1",
     "@codemirror/lang-vue": "^0.1.0",
+    "@codemirror/lang-wast": "^6.0.1",
     "@remix-run/server-runtime": "^2.15.2",
     "@nanostores/react": "^0.8.4",
     "nanostores": "^0.11.3",
