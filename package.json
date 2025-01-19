@@ -122,9 +122,7 @@
     "@types/express": "^4.17.17",
     "@types/sqlite3": "^3.1.8",
     "@types/highlight.js": "^10.1.0",
-    "@types/react-toastify": "^9.1.1",
-    "@types/remark-gfm": "^3.0.1",
-    "@types/rehype-raw": "^6.1.2",
+    "@types/react-toastify": "^4.1.0",
     "vitest": "^1.0.0"
   }
 }
