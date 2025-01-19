@@ -1,16 +1,14 @@
 import { useStore } from '@nanostores/react';
-import type { LinksFunction } from '@remix-run/cloudflare';
+import type { LinksFunction } from '@remix-run/node'; // Changed from cloudflare
 import { Links, Meta, Outlet, Scripts, ScrollRestoration } from '@remix-run/react';
 import tailwindReset from '@unocss/reset/tailwind-compat.css?url';
 import { themeStore } from './lib/stores/theme';
 import { stripIndents } from './utils/stripIndent';
 import { createHead } from 'remix-island';
 import { useEffect } from 'react';
-
 import reactToastifyStyles from 'react-toastify/dist/ReactToastify.css?url';
 import globalStyles from './styles/index.scss?url';
 import xtermStyles from '@xterm/xterm/css/xterm.css?url';
-
 import 'virtual:uno.css';
 
 export const links: LinksFunction = () => [
@@ -40,14 +38,11 @@ export const links: LinksFunction = () => [
 
 const inlineThemeCode = stripIndents`
   setTutorialKitTheme();
-
   function setTutorialKitTheme() {
     let theme = localStorage.getItem('bolt_theme');
-
     if (!theme) {
       theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
     }
-
     document.querySelector('html')?.setAttribute('data-theme', theme);
   }
 `;
@@ -64,11 +59,9 @@ export const Head = createHead(() => (
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const theme = useStore(themeStore);
-
   useEffect(() => {
     document.querySelector('html')?.setAttribute('data-theme', theme);
   }, [theme]);
-
   return (
     <>
       {children}
@@ -82,7 +75,6 @@ import { logStore } from './lib/stores/logs';
 
 export default function App() {
   const theme = useStore(themeStore);
-
   useEffect(() => {
     logStore.logSystem('Application initialized', {
       theme,
@@ -91,7 +83,6 @@ export default function App() {
       timestamp: new Date().toISOString(),
     });
   }, []);
-
   return (
     <Layout>
       <Outlet />
