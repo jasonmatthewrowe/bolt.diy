@@ -12,9 +12,10 @@ RUN corepack enable pnpm && \
 # Copy the rest of the application
 COPY . .
 
-# Add Vite and React dependencies
-RUN pnpm add -D vite @vitejs/plugin-react typescript @types/react @types/react-dom && \
-    pnpm add react react-dom
+# Add Remix and related dependencies
+RUN pnpm add @remix-run/node @remix-run/react @remix-run/server-runtime react react-dom && \
+    pnpm add -D @remix-run/dev @types/react @types/react-dom typescript vite unocss \
+    vite-plugin-node-polyfills vite-plugin-optimize-css-modules vite-tsconfig-paths
 
 # Production image
 FROM base AS bolt-ai-production
@@ -29,8 +30,8 @@ RUN mkdir -p /app/data && \
     chmod -R 755 /app && \
     chmod -R 777 /app/data
 
-# Build the Vite application
-RUN pnpm exec vite build
+# Build the Remix application
+RUN pnpm run build
 
 # Switch to non-root user
 USER node
