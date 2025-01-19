@@ -20,6 +20,7 @@
     "@remix-run/server-runtime": "^2.5.0",
     "@nanostores/react": "^0.7.1",
     "nanostores": "^0.9.5",
+    "remix-island": "^0.1.2",
     "express": "^4.18.2",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
