@@ -17,6 +17,11 @@ import { allowedHTMLElements } from '~/utils/markdown';
 import { LLMManager } from '~/lib/modules/llm/manager';
 import { createScopedLogger } from '~/utils/logger';
 
+// Define NodeJS environment type to replace Cloudflare's Env
+interface NodeEnv {
+  [key: string]: string | undefined;
+}
+
 interface ToolResult<Name extends string, Args, Result> {
   toolCallId: string;
   toolName: Name;
@@ -50,16 +55,12 @@ type Dirent = File | Folder;
 export type FileMap = Record<string, Dirent | undefined>;
 
 export function simplifyBoltActions(input: string): string {
-  // Using regex to match boltAction tags that have type="file"
   const regex = /(<boltAction[^>]*type="file"[^>]*>)([\s\S]*?)(<\/boltAction>)/g;
-
-  // Replace each matching occurrence
   return input.replace(regex, (_0, openingTag, _2, closingTag) => {
     return `${openingTag}\n          ...\n        ${closingTag}`;
   });
 }
 
-// Common patterns to ignore, similar to .gitignore
 const IGNORE_PATTERNS = [
   'node_modules/**',
   '.git/**',
@@ -91,11 +92,9 @@ function createFilesContext(files: FileMap) {
     .filter((x) => files[x] && files[x].type == 'file')
     .map((path) => {
       const dirent = files[path];
-
       if (!dirent || dirent.type == 'folder') {
         return '';
       }
-
       const codeWithLinesNumbers = dirent.content
         .split('\n')
         .map((v, i) => `${i + 1}|${v}`)
@@ -114,17 +113,7 @@ function extractPropertiesFromMessage(message: Message): { model: string; provid
 
   const modelMatch = textContent.match(MODEL_REGEX);
   const providerMatch = textContent.match(PROVIDER_REGEX);
-
-  /*
-   * Extract model
-   * const modelMatch = message.content.match(MODEL_REGEX);
-   */
   const model = modelMatch ? modelMatch[1] : DEFAULT_MODEL;
-
-  /*
-   * Extract provider
-   * const providerMatch = message.content.match(PROVIDER_REGEX);
-   */
   const provider = providerMatch ? providerMatch[1] : DEFAULT_PROVIDER.name;
 
   const cleanedContent = Array.isArray(message.content)
@@ -135,8 +124,7 @@ function extractPropertiesFromMessage(message: Message): { model: string; provid
             text: item.text?.replace(MODEL_REGEX, '').replace(PROVIDER_REGEX, ''),
           };
         }
-
-        return item; // Preserve image_url and other types as is
+        return item;
       })
     : textContent.replace(MODEL_REGEX, '').replace(PROVIDER_REGEX, '');
 
@@ -147,7 +135,7 @@ const logger = createScopedLogger('stream-text');
 
 export async function streamText(props: {
   messages: Messages;
-  env: Env;
+  env: NodeEnv; // Changed from Env to NodeEnv
   options?: StreamingOptions;
   apiKeys?: Record<string, string>;
   files?: FileMap;
@@ -157,8 +145,6 @@ export async function streamText(props: {
 }) {
   const { messages, env: serverEnv, options, apiKeys, files, providerSettings, promptId, contextOptimization } = props;
 
-  // console.log({serverEnv});
-
   let currentModel = DEFAULT_MODEL;
   let currentProvider = DEFAULT_PROVIDER.name;
   const processedMessages = messages.map((message) => {
@@ -166,18 +152,14 @@ export async function streamText(props: {
       const { model, provider, content } = extractPropertiesFromMessage(message);
       currentModel = model;
       currentProvider = provider;
-
       return { ...message, content };
     } else if (message.role == 'assistant') {
       let content = message.content;
-
       if (contextOptimization) {
         content = simplifyBoltActions(content);
       }
-
       return { ...message, content };
     }
-
     return message;
   });
 
@@ -191,7 +173,7 @@ export async function streamText(props: {
       ...(await LLMManager.getInstance().getModelListFromProvider(provider, {
         apiKeys,
         providerSettings,
-        serverEnv: serverEnv as any,
+        serverEnv,
       })),
     ];
 
@@ -202,7 +184,6 @@ export async function streamText(props: {
     modelDetails = modelsList.find((m) => m.name === currentModel);
 
     if (!modelDetails) {
-      // Fallback to first model
       logger.warn(
         `MODEL [${currentModel}] not found in provider [${provider.name}]. Falling back to first model. ${modelsList[0].name}`,
       );
