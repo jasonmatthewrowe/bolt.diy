@@ -5,20 +5,20 @@ import { nodePolyfills } from 'vite-plugin-node-polyfills';
 import { optimizeCssModules } from 'vite-plugin-optimize-css-modules';
 import tsconfigPaths from 'vite-tsconfig-paths';
 import * as dotenv from 'dotenv';
-import { execSync } from 'child_process';
 
 dotenv.config();
 
 // Get git hash with fallback
 const getGitHash = () => {
   try {
+    const { execSync } = require('child_process');
     return execSync('git rev-parse --short HEAD').toString().trim();
   } catch {
     return 'no-git-info';
   }
 };
 
-export default defineConfig((config) => {
+export default defineConfig(({ command, mode }) => {
   return {
     define: {
       __COMMIT_HASH: JSON.stringify(getGitHash()),
@@ -26,31 +26,31 @@ export default defineConfig((config) => {
     },
     build: {
       target: 'esnext',
-      outDir: 'dist',
-      manifest: true,
+      minify: mode === 'production',
       rollupOptions: {
-        input: {
+        input: command === 'build' ? undefined : {
           entry: './app/entry.client.tsx',
         },
       },
     },
     plugins: [
-      nodePolyfills({
-        include: ['path', 'buffer', 'process'],
-      }),
       remixVitePlugin({
         future: {
           v3_fetcherPersist: true,
           v3_relativeSplatPath: true,
           v3_throwAbortReason: true,
-          v3_lazyRouteDiscovery: true
+          v3_lazyRouteDiscovery: true,
+          v3_singleFetch: true
         },
       }),
       UnoCSS(),
       tsconfigPaths(),
-      chrome129IssuePlugin(),
-      config.mode === 'production' && optimizeCssModules({ apply: 'build' }),
-    ],
+      nodePolyfills({
+        include: ['path', 'buffer', 'process'],
+      }),
+      mode === 'production' && optimizeCssModules({ apply: 'build' }),
+    ].filter(Boolean),
+    appType: 'custom',
     envPrefix: ["VITE_","OPENAI_LIKE_API_BASE_URL", "OLLAMA_API_BASE_URL", "LMSTUDIO_API_BASE_URL","TOGETHER_API_BASE_URL"],
     css: {
       preprocessorOptions: {
@@ -59,27 +59,9 @@ export default defineConfig((config) => {
         },
       },
     },
+    ssr: {
+      target: 'node',
+      noExternal: ['@remix-run/*']
+    }
   };
 });
-
-function chrome129IssuePlugin() {
-  return {
-    name: 'chrome129IssuePlugin',
-    configureServer(server: ViteDevServer) {
-      server.middlewares.use((req, res, next) => {
-        const raw = req.headers['user-agent']?.match(/Chrom(e|ium)\/([0-9]+)\./);
-        if (raw) {
-          const version = parseInt(raw[2], 10);
-          if (version === 129) {
-            res.setHeader('content-type', 'text/html');
-            res.end(
-              '<body><h1>Please use Chrome Canary for testing.</h1><p>Chrome 129 has an issue with JavaScript modules & Vite local development, see <a href="https://github.com/stackblitz/bolt.new/issues/86#issuecomment-2395519258">for more information.</a></p><p><b>Note:</b> This only impacts <u>local development</u>. `pnpm run build` and `pnpm run start` will work fine in this browser.</p></body>',
-            );
-            return;
-          }
-        }
-        next();
-      });
-    },
-  };
-}
