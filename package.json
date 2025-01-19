@@ -121,7 +121,7 @@
     "@types/sass": "^1.45.0",
     "@types/express": "^5.0.0",
     "@types/sqlite3": "^3.1.11",
-    "@types/highlight.js": "^11.8.1",
+    "@types/highlight.js": "^10.1.0",
     "@types/react-toastify": "^9.1.1",
     "vitest": "^3.0.2"
   }
