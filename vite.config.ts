@@ -8,7 +8,6 @@ import * as dotenv from 'dotenv';
 
 dotenv.config();
 
-// Get git hash with fallback
 const getGitHash = () => {
   try {
     const { execSync } = require('child_process');
@@ -58,10 +57,16 @@ export default defineConfig(({ command, mode }) => {
           api: 'modern-compiler',
         },
       },
+      modules: {
+        localsConvention: 'camelCaseOnly',
+      }
     },
     ssr: {
       target: 'node',
-      noExternal: ['@remix-run/*']
+      noExternal: ['@remix-run/*', 'react-toastify']
+    },
+    optimizeDeps: {
+      include: ['react-toastify']
     }
   };
 });
