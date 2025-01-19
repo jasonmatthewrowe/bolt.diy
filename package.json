@@ -84,7 +84,7 @@
     "@radix-ui/react-context-menu": "^1.0.0",
     "@radix-ui/react-dropdown-menu": "^1.0.0",
     "@radix-ui/react-switch": "^1.0.0",
-    "@uiw/codemirror-theme-vscode": "^6.0.0",
+    "@uiw/codemirror-theme-vscode": "^4.0.0",
     "@webcontainer/api": "^1.0.0",
     "@xterm/addon-fit": "^5.3.0",
     "@xterm/addon-web-links": "^5.3.0",
