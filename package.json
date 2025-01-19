@@ -19,6 +19,7 @@
     "@remix-run/express": "^2.15.2",
     "@remix-run/node": "^2.15.2",
     "@remix-run/react": "^2.15.2",
+    "@codemirror/lang-markdown": "^6.0.1", 
     "@codemirror/lang-json": "^6.0.1",
     "@codemirror/lang-vue": "^0.1.0",
     "@remix-run/server-runtime": "^2.15.2",
